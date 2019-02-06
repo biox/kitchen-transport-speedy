@@ -44,12 +44,12 @@ module Kitchen
           "mkdir -p #{remote}"
         end
 
-        def archive_locally(path, archive_path)
-          "tar -cf #{archive_path} -C #{::File.dirname(path)} #{::File.basename(path)}"
+        def archive_locally(tar_cmd, path, archive_path)
+          "#{tar_cmd} -cf #{archive_path} -C #{::File.dirname(path)} #{::File.basename(path)}"
         end
 
-        def dearchive_remotely(archive_basename, remote)
-          "tar -xf #{::File.join(remote, archive_basename)} -C #{remote}"
+        def dearchive_remotely(tar_cmd, archive_basename, remote)
+          "#{tar_cmd} -xf #{::File.join(remote, archive_basename)} -C #{remote}"
         end
       end
 

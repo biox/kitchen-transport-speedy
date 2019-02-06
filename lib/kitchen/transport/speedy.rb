@@ -35,6 +35,11 @@ module Kitchen
         raise NotImplementedError
       end
 
+      def command?(name)
+        `which #{name}`
+        $?.success?
+      end
+
       def  dearchive_remotely(archive_basename, remote)
         raise NotImplementedError
       end
@@ -45,18 +50,24 @@ module Kitchen
           return super
         end
 
+        if command?('gtar')
+          tar_cmd = 'gtar'
+        else
+          tar_cmd = 'tar'
+        end
+
         Array(locals).each do |local|
           if ::File.directory?(local)
             file_count = ::Dir.glob(::File.join(local, '**/*')).size
             logger.debug("#{local} contains #{file_count}")
             archive_basename = ::File.basename(local) + '.tar'
             archive = ::File.join(::File.dirname(local), archive_basename)
-            Mixlib::ShellOut.new(archive_locally(local, archive)).run_command.error!
+            Mixlib::ShellOut.new(archive_locally(tar_cmd, local, archive)).run_command.error!
             execute(ensure_remotedir_exists(remote))
 
             logger.debug("Calling regular upload for #{archive} to #{remote}")
             super(archive, remote)
-            execute(dearchive_remotely(archive_basename, remote))
+            execute(dearchive_remotely(tar_cmd, archive_basename, remote))
           else
             logger.debug("Calling regular upload for #{local} since it is a simple file")
             super(local, remote)
